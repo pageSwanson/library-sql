@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>My test page</title>
+  </head>
+  <script>
+   'use strict';
+   (async () => {
+       // make a web request
+       // connect to the server (the computer)
+       let url = 'http://localhost:8080/api/data';
+       let response = await fetch(url);
+
+       if (response.ok) { // if HTTP-status is 200-299
+           // get the response body (the method explained below) text
+           // get a response with our database data
+           let body = await response.text();
+           console.log(body);
+       } else {
+           alert("HTTP-Error: " + response.status);
+       }
+   })();
+  </script>
+  <body>
+    <p>This is my page</p>
+  </body>
+</html>
