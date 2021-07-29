@@ -1,3 +1,8 @@
+import { DB } from "https://deno.land/x/sqlite/mod.ts";
+
+// open the database file
+const db = new DB("sqlite.db");
+
 // Start listening on port 8080 of localhost.
 const server = Deno.listen({ port: 8080 });
 const url = `http://localhost:8080/`;
@@ -20,7 +25,7 @@ for await (const conn of server) {
             // objects.
 
             // Read the index.html file
-            const index_content = await Deno.readFile('public/index.html');
+            const index_content = await Deno.readFile(`public/index.html`);
 
             // ...  and serve it!
             // The requestEvent's `.respondWith()` method is how we send the response
@@ -34,16 +39,33 @@ for await (const conn of server) {
         }
         // if the request is to a url that matches 'http://localhost:8080/api/data'
         // the following code will execute
-        if (requestEvent.request.url == url + 'api/data') {
+        if (requestEvent.request.url == url + `api/data`) {
             // add a console entry to debug
-            console.log('You requested data');
+            console.log(`You requested data`);
 
-            // store our data in the response 'body'
-            const body = `Data will be here`;
+            // determine how our data should look
+            // we can store what we like within a structure
+            // the following defines a list of 'strings'
+            const data: Array<string> = [];
+
+            // read this as 'for every row that we select with our query'
+            for (
+                const [color, material, volume, manufactured_where] of
+                db.query(`SELECT color, material, volume_milliliters, manufactured_where FROM bottle_info`)
+            ) {
+                console.log(color as string, material as string, volume as number, manufactured_where as string);
+                // add the items from the row as one long string
+                data.push(
+                    `color: ${color}, material: ${material}, volume: ${volume}, manufactured_where: ${manufactured_where}`
+                );
+            }
 
             // respond to the request with the requested data
+            // now our body contains real content
             requestEvent.respondWith(
-                new Response(body, {
+                // we expect a string - so create a string from the list
+                // separate each item onto a separate line
+                new Response(data.join(`\n`), {
                     status: 200,
                 }),
             );
@@ -52,3 +74,5 @@ for await (const conn of server) {
     }
   })();
 }
+
+db.close();
